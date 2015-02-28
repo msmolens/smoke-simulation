@@ -1,0 +1,37 @@
+\documentclass[11pt]{article}
+
+%\usepackage{fullpage}
+\usepackage{latexsym}
+\usepackage{amsmath}
+%\usepackage{fancyhdr}
+\usepackage{amssymb}
+%\usepackage{amsthm}
+%\usepackage{epsfig}
+%\usepackage{graphicx}
+%\usepackage{setspace}
+%\usepackage{lgrind}
+%\usepackage{moreverb}
+%\usepackage{subfigure}
+
+
+\begin{document}
+
+\[f(x)=\sum_{i}\left|\frac{1}{2^{i}}\textrm{noise}\left(2^{i}x\right)\right|\]
+
+\[\overline{x}(t+\Delta t) = \overline{x}(t)+\Delta t\; \overline{v}\]
+
+\[\overline{v}(t+\Delta t) = \overline{v}(t)+\Delta t\; \overline{F}/m.\]
+
+\[\overline{F}=\overline{F}_{grav}+\overline{F}_{conv}+\overline{F}_{fric}+\overline{F}_{user}\]
+
+\[\overline{F}_{grav}=c_{grav}\;m\;\overline{e}_{down}\]
+
+\[\overline{F}_{conv}=\left(\frac{c_{conv,1}}{T_{sim}}-\frac{c_{conv,2}}{T(t)}\right) \overline{e}_{up}\]
+
+\[T(t)=(T(t_0)-T_{sim})e^{-t/c_{cool}}+T_{sim}\]
+
+\[\overline{F}_{fric}=-c_{fric,1}\;m\;|\overline{v}|^{c_{fric,2}}\;\frac{\overline{v}}{|\overline{v}|}\]
+
+\[\rho(t+\Delta t) = \rho(t)-c_{diss}|\overline{v}|\Delta t\]
+
+\end{document}

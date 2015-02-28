@@ -1,0 +1,238 @@
+<html>
+<head>
+<title>COMP 259: Physically-Based Modeling, Simulation and Animation - Max Smolens</title>
+<meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
+<style type="text/css">
+body {
+  color:black;
+  margin:1em;
+}
+div.title {
+  font-family:tahoma,arial,helvetica,sans-serif;
+  padding:0.5em;
+  font-weight:bold;
+  border:2px ridge lightblue;
+  background-color:rgb(241,241,241);
+  text-align:left;
+  margin-top:3em;
+  margin-bottom:1em;
+}
+td {
+  padding-left:0.75em;
+}
+.heading {
+  font-size:larger;
+  font-weight:bold;
+}
+hr {
+  width:40%;
+}
+.image {
+  padding-top:1em;
+  padding-bottom:1em;
+  padding-right:1em;
+  text-align:center;
+  font-family:tahoma,arial,helvetica,sans-serif;
+}
+.math {
+  font-family:monospace;
+  padding-bottom:1em;
+}
+</style>
+</head>
+
+<body>
+<div class=title>
+COMP 259: Physically-Based Modeling, Simulation and Animation
+<hr size=1 align=left>
+<span style="font-weight:normal;">
+Max Smolens (<a href="mailto:max@cs.unc.edu">max@cs.unc.edu</a>)<br>
+</span>
+</div>
+
+<div class=image>
+<img src="images/darksmoke.jpg" style="border:1px solid orange;">
+</div>
+
+<div class=title>Final Project: Simulating Smoke and Steam at Interactive Rates</div>
+
+<table border=0 cellpadding=0 cellspacing=0 width=85%>
+<tr><td>
+<!--
+Files:
+<ul>
+<li><a href="comp259_project.tar.gz">comp259_project.tar.gz</a> - source code, README and Linux executable
+</ul>
+-->
+Required libraries:
+<ul>
+<li><a href="http://www.imagemagick.org/">ImageMagick</a>
+<li><a href="http://www.cs.unc.edu/~rademach/glui/">GLUI</a>
+</ul>
+<!--
+Movies: (DIVX)
+<ul>
+<li><a href="http://www.unc.edu/~smolens/courses/comp259/project_movies/">My project</a>
+</li>
+</ul>
+-->
+Links:
+<ul>
+<li><a href="http://www.cs.unc.edu/~davemc/Particle/">Particle Systems API</a> by David McAllister (a modified version is already included in my source tarball)
+<li><a href="http://www.mplayerhq.hu">MPlayer</a> (to make movies from screendumps using 'make movie')
+<li><a href="http://www.divx.com">DiVX Codec for Windows</a>
+</ul>
+
+<hr size=1 align=left>
+<span class=heading>INTRODUCTION</span>
+<p>
+The goal of my final project was to implement as much of Holtkamper's
+paper describing a real-time and interactive smoke and steam
+simulation [1] as possible.  Holtkamper's method emphasizes real-time
+simulation and visually correct interaction between the smoke and
+objects in the virtual environment.  Although I did not have time to
+implement the interaction of the smoke with objects in the environment,
+my project allows for different visual styles of smoke and
+arbitrary wind-like forces to be applied to the smoke.
+<p>
+
+<span class=heading>BACKGROUND</span>
+<p>
+Three major previous techniques for simulating smoke are particle
+system simulation, image synthesis and physically-based simulation.
+In particles systems, single particles or clusters of particles move
+through the simulation space.  Their positions and velocities are
+updated according to simple force equations.  Particle systems tend to
+be much more flexible than other simulation methods.  Image synthesis
+methods of smoke simulation typically modulate Perlin's noise function
+[2] to yield density for display.  However, image synthesis methods
+are limited by their inability to easily include arbitrary objects in
+the simulation.  Physically-based simulations of smoke typically
+compute the Navier-Strokes equations.  This can yield high-quality
+renderings, but the computational cost is high.  Equation solvers of
+this sort can also be limited by their solution domain; it can again
+be difficult to include arbitrary objects.
+<p>
+
+<span class=heading>SIMULATION OVERVIEW</span>
+<p>
+The simulation approach taken by Holtkamper involves combining
+particle systems with image synthesis and some rendering tricks.  The
+particles are rendered as semi-transparent textured billboards.
+
+<div class=image>
+<img src="images/equation.jpg">
+</div>
+<p>
+
+<span class=heading>TURBULENCE SPACE</span>
+<p>
+The turbulence space is where the turbulent appearance of the smoke is
+calculated.  Turbulence space is nothing more than a function
+modulating Perlin noise:
+<br>
+<div class=image><img src="img1.png"></div>
+
+At certain intervals, sources release new particle clusters into the
+simulation.  A source maintains its position in the turbulence space.
+Within the volume of the source, the turbulence space is sampled at
+random positions, one for each particle in the new cluster.  The
+sampled values are assigned as densities to the particles.  After
+generating a new cluster, the source moves through the turbulence
+space in a direction opposite the velocity of the cluster it just
+created and the cluster is released into the simulation space.  The
+movement of the sources through turbulence space contributes to the
+turbulent look of the smoke.
+<p>
+<div class=image>
+<img src="images/turb.jpg">
+</div>
+
+<p>
+<span class=heading>PARTICLE SIMULATION</span>
+<p>
+Once a particle cluster is released into the simulation space, it is
+now under control of the particle system.  Each cluster has a
+position, velocity and temperature.  The individual particles in each
+cluster maintain their own densities.
+<p>
+The position and velocity of each cluster are updated each timestep by
+the equations
+<div class=image><img src="img2.png"></div>
+and
+<div class=image><img src="img3.png"></div>
+The force is given by the sum of gravitational, convection,
+frictional and user-defined forces:
+<div class=image><img src="img4.png"></div>
+<div class=image><img src="img5.png"></div>
+<div class=image><img src="img6.png"></div>
+<div class=image><img src="img7.png"></div>
+<div class=image><img src="img8.png"></div>
+The user-defined global force can be specified as beginning and end
+magnitudes and directions for a specified duration.  The force is
+smoothly interpolated over the duration.
+<p>
+The smoke also gradually dissolves during its movement due to a
+dissipation calculation applied to each particle that attenuates its
+density:
+<div class=image><img src="img9.png"></div>
+The values of the constants in these equations have physical bases
+that are explained in Appendix A of the paper.
+<p>
+
+<span class=heading>PARTICLE RENDERING</span>
+<p>
+The particles are rendered as semi-transparent textured billboards
+with alpha values set to their densities.  The billboards are oriented
+to always face the viewer.  In order to reduce rendering artifacts
+from alpha blending, the particles are sorted and rendered in
+back-to-front order.  The images below show the Gaussian texture used
+and what the simulation looks like without and with the texture applied.
+<p>
+<div class=image>
+<img src="images/gaussian.jpg" width=200 style="border:1px solid orange;">
+<img src="images/flat_particles.jpg" width=200 style="border:1px solid orange;">
+<img src="images/textured_smoke.jpg" width=200 style="border:1px solid orange;">
+</div>
+<p>
+
+<span class=heading>CONCLUSIONS</span>
+<p>
+My simulation runs in real-time, as desired.  I ran the simulation
+>1000 clusters with 10 particles/cluster at 1000x1000 resolution and
+the framerate was real-time.  The test machine was a P4 2.4GHz using a
+GeForce4 Ti 4200 graphics card.  I think the simulation looks
+reasonably realistic.  The movies (linked at the top of this page)
+demonstrate the simulation much better than still pictures.  Compared
+to the movies provided by Holtkamper, I think my simulation lives up
+to the visual quality of his.
+<p>
+
+<span class=heading>FUTURE WORK</span>
+<p>
+One of my original extended goals was to include objects in the
+simulation that the smoke would interact with.  A method to do this is
+described in the paper, albeit not entirely clearly.  Ideally the
+objects could move dynamically.  And as always, it would also be neat
+to displace some of the processing of the simulation to the GPU.
+
+<p>
+<span class=heading>REFERENCES</span>
+<p>
+[1] Holtkamper, Thorsten. Real-time gaseous phenomena: a
+phenomenological approach to interactive smoke and steam. Proceedings
+of the 2nd international conference on Computer graphics, virtual
+reality, visualization and interaction in Africa, pp. 25-30, 2003.
+<p>
+[2] Perlin, K. An image synthesizer, ACM SIGGRAPH Computer Graphics,
+v.19 n.3, p.287-296, Jul. 1985
+
+</td></tr>
+</table>
+
+<br><br><br><br>
+<div class=image><img src="images/nosmoking.gif"></div>
+<hr size=1 style="width:100%">
+
+</body>
+</html>

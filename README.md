@@ -17,7 +17,7 @@ Approach to Interactive Smoke and Stream, 2003*.  A concentration is
 made on the visual effect of the smoke, rather than a
 physically-correct simulation.
 
-See [doc/index.html](doc/index.html) for details on the technique.
+See http://msmolens.github.io/smoke-simulation for details on the technique.
 
 ## Compiling
 
